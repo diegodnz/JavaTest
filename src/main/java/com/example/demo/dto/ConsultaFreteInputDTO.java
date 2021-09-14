@@ -1,20 +1,26 @@
 package com.example.demo.dto;
 
 import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class ConsultaFreteInputDTO {
-	
+	// TODO Tratar mensagens das validações
 	@DecimalMax("10000.0")
+	@NotNull
 	private Double peso;
 	
 	@Size(max = 64)
+	@NotBlank
 	private String cepOrigem;
 	
 	@Size(max = 64)
+	@NotBlank
 	private String cepDestino;
 	
 	@Size(max = 255)
+	@NotBlank
 	private String nomeDestinatario;
 
 	public ConsultaFreteInputDTO(Double peso, String cepOrigem, String cepDestino, String nomeDestinatario) {
