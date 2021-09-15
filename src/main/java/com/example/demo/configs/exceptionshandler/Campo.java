@@ -1,8 +1,13 @@
 package com.example.demo.configs.exceptionshandler;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class Campo {
 
+	@ApiModelProperty(position = 0)
 	private String nome;
+	
+	@ApiModelProperty(position = 1)
 	private String mensagem;
 
 	public Campo(String nome, String mensagem) {

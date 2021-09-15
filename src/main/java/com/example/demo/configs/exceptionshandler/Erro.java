@@ -6,13 +6,24 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import io.swagger.annotations.ApiModelProperty;
+
 @JsonInclude(Include.NON_NULL)
 public class Erro {
 
+	@ApiModelProperty(position = 0)
 	private Integer status;
+	
+	@ApiModelProperty(position = 1)
 	private OffsetDateTime dataHora;
+	
+	@ApiModelProperty(position = 2)
 	private String titulo;
+	
+	@ApiModelProperty(position = 3)
 	private Boolean possuiCampos;
+	
+	@ApiModelProperty(position = 4)
 	private List<Campo> campos;
 
 	public Erro() {
