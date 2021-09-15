@@ -25,20 +25,39 @@ public class EntregaServices {
 	
 	protected RestTemplate restTemplate = new RestTemplate();
 	
+	/**
+     * Este método obtém informações de endereço a partir de um cep, fazendo requisição na api viacep
+     * @param nomeCampo - String utilizada para representar qual cep está sendo consultado (cepOrigem/cepDestino)
+     * @param cep - O cep que será consultado
+     * @param camposInvalidos - Lista onde será adicionado um erro do tipo "Campo", caso o cep seja inválido
+     * @return Caso o cep seja válido, retorna o endereço completo referente ao cep.
+     * @return Caso o cep seja inválido, um erro será adicionado em "camposInvalidos".
+     * @throws Caso o serviço "viacep" não funcione como o esperado, será lançada uma "NegocioException", retornando o status 503
+     */
 	private ConsultaCepDTO consultarCep(String nomeCampo, String cep, List<Campo> camposInvalidos) {
 		ConsultaCepDTO responseEntity = null;
 		try {
 		responseEntity = restTemplate.getForObject("https://viacep.com.br/ws/"
 													+ cep + "/json/", ConsultaCepDTO.class);
+		
 		} catch(HttpClientErrorException e) {
 		camposInvalidos.add(new Campo(nomeCampo, "Cep inválido"));
+		
 		} catch(Exception e) {
-		throw new NegocioException(HttpStatus.BAD_REQUEST, "Serviço indisponível");
+		throw new NegocioException(HttpStatus.SERVICE_UNAVAILABLE, "Serviço indisponível");
 		}
 		
 		return responseEntity;
 	}
 	
+	/**
+	 * Este método calcula o preço do frete baseado nos parâmetros recebidos
+	 * @param dadosConsulta - Dto que contém os dados necessários para calcular o frete (dados recebidos na requisição da api)
+	 * @return Caso os ceps sejam válidos,
+	 * retorna um ResponseEntity com o preço do frete calculado, além de informações adicionais presentes em "ConsultaFreteOutputDTO"
+	 * @throws Caso pelo menos 1 cep seja inválido, lança uma Exceção do tipo "CamposException"
+	 * @throws Caso o serviço "viacep" não funcione como o esperado, será lançada uma "NegocioException", retornando o status 503 
+	 */	
 	public ResponseEntity<ConsultaFreteOutputDTO> calcularFrete(ConsultaFreteInputDTO dadosConsulta) {
 		
 		String cepOrigem = dadosConsulta.getCepOrigem();
