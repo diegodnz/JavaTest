@@ -1,13 +1,15 @@
 package com.example.demo.dto;
 
 import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class ConsultaFreteInputDTO {
 	// TODO Tratar mensagens das validações
-	@DecimalMax("10000.0")
+	@DecimalMax("100000.0")
+	@DecimalMin("0.01")
 	@NotNull
 	private Double peso;
 	

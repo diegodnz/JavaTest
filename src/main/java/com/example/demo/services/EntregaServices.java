@@ -1,7 +1,8 @@
 package com.example.demo.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.configs.exceptionshandler.Campo;
@@ -19,9 +19,14 @@ import com.example.demo.configs.exceptionshandler.exceptions.NegocioException;
 import com.example.demo.dto.ConsultaCepDTO;
 import com.example.demo.dto.ConsultaFreteInputDTO;
 import com.example.demo.dto.ConsultaFreteOutputDTO;
+import com.example.demo.models.Consulta;
+import com.example.demo.repositories.ConsultaRepository;
 
 @Service
 public class EntregaServices {
+	
+	@Autowired
+	protected ConsultaRepository consultaRepository;
 	
 	protected RestTemplate restTemplate = new RestTemplate();
 	
@@ -31,20 +36,31 @@ public class EntregaServices {
      * @param cep - O cep que será consultado
      * @param camposInvalidos - Lista onde será adicionado um erro do tipo "Campo", caso o cep seja inválido
      * @return Caso o cep seja válido, retorna o endereço completo referente ao cep.
+     * 
      * @return Caso o cep seja inválido, um erro será adicionado em "camposInvalidos".
+     * Este retorno acontece em ambos os casos:
+     * 1 - Caso o cep possua a quantidade certa de caracteres (8), seja composto somente por números, mas não é válido
+     * O "viacep" retorna status 200 com corpo {"erro": true}
+     * 2 - Caso o cep possua letras ou sua quantidade de caracteres é diferente de 8
+     * A requisição para o "viacep" lança a exceção "HttpClientErrorException
+     * 
      * @throws Caso o serviço "viacep" não funcione como o esperado, será lançada uma "NegocioException", retornando o status 503
      */
 	private ConsultaCepDTO consultarCep(String nomeCampo, String cep, List<Campo> camposInvalidos) {
 		ConsultaCepDTO responseEntity = null;
 		try {
-		responseEntity = restTemplate.getForObject("https://viacep.com.br/ws/"
+			responseEntity = restTemplate.getForObject("https://viacep.com.br/ws/"
 													+ cep + "/json/", ConsultaCepDTO.class);
+			if (responseEntity.getErro()) {
+				throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+			}
 		
 		} catch(HttpClientErrorException e) {
-		camposInvalidos.add(new Campo(nomeCampo, "Cep inválido"));
+			camposInvalidos.add(new Campo(nomeCampo, "Cep inválido"));
 		
 		} catch(Exception e) {
-		throw new NegocioException(HttpStatus.SERVICE_UNAVAILABLE, "Serviço indisponível");
+			e.printStackTrace();
+			throw new NegocioException(HttpStatus.SERVICE_UNAVAILABLE, "Serviço indisponível");
 		}
 		
 		return responseEntity;
@@ -62,6 +78,7 @@ public class EntregaServices {
 		
 		String cepOrigem = dadosConsulta.getCepOrigem();
 		String cepDestino = dadosConsulta.getCepDestino();
+		Double pesoCalcularFrete = dadosConsulta.getPeso();
 
 		List<Campo> camposInvalidos = new LinkedList<>();		
 		ConsultaCepDTO enderecoOrigem = consultarCep("cepOrigem", cepOrigem, camposInvalidos);
@@ -83,10 +100,17 @@ public class EntregaServices {
 			diasEntrega = 3;
 		}
 		
-		precoFrete = dadosConsulta.getPeso() * ((100-desconto)/100.0);
-		precoFrete = Math.round(precoFrete * 100.0)/100.0;
+		if (pesoCalcularFrete < 1.0) {
+			pesoCalcularFrete = 1.0;
+		}
+		precoFrete = pesoCalcularFrete * ((100-desconto)/100.0);
+		BigDecimal precoFreteReais = new BigDecimal(precoFrete).setScale(2,RoundingMode.UP);
+		precoFrete = precoFreteReais.doubleValue();
 				
 		ConsultaFreteOutputDTO resultado = new ConsultaFreteOutputDTO(precoFrete, LocalDate.now().plusDays(diasEntrega), cepOrigem, cepDestino);
+		Consulta consultaModel = new Consulta(dadosConsulta.getPeso(), cepOrigem, cepDestino, dadosConsulta.getNomeDestinatario(), 
+											  precoFrete, resultado.getDataPrevistaEntrega(), LocalDate.now());
+		consultaRepository.save(consultaModel);
 		return new ResponseEntity<ConsultaFreteOutputDTO>(resultado, HttpStatus.OK);
 		
 	}

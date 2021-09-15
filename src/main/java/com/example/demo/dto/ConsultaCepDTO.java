@@ -2,6 +2,8 @@ package com.example.demo.dto;
 
 public class ConsultaCepDTO {
 	
+	private Boolean erro;
+	
 	private String cep;
 	
 	private String logradouro;
@@ -24,8 +26,9 @@ public class ConsultaCepDTO {
 
 	public ConsultaCepDTO() {}
 
-	public ConsultaCepDTO(String cep, String logradouro, String complemento, String bairro, String localidade,
+	public ConsultaCepDTO(Boolean erro, String cep, String logradouro, String complemento, String bairro, String localidade,
 			String uf, String ibge, String gia, String ddd, String siafi) {
+		this.erro = erro;
 		this.cep = cep;
 		this.logradouro = logradouro;
 		this.complemento = complemento;
@@ -36,6 +39,17 @@ public class ConsultaCepDTO {
 		this.gia = gia;
 		this.ddd = ddd;
 		this.siafi = siafi;
+	}
+
+	public Boolean getErro() {
+		if (erro == null) {
+			return false;
+		}
+		return erro;
+	}
+
+	public void setErro(Boolean erro) {
+		this.erro = erro;
 	}
 
 	public String getCep() {

@@ -1,9 +1,13 @@
+# **Renomear este arquivo para application-dev.properties após realizar as alterações**
 # Preencher:
 # dbhost = host do banco de dados
 # dbname = nome do bd
 # dbuser = usuário do bd
 # dbpassword = senha do bd
 
-spring.datasource.url=jdbc:postgresql://dbhost:5432/dbname?autoReconnect=true&serverTimezone=UTC&useSSL=false
+spring.datasource.url=jdbc:postgresql://dbhost:5432/dbname
 spring.datasource.username=dbname
 spring.datasource.password=dbpassword
+
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
