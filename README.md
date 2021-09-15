@@ -40,3 +40,10 @@ Deve ser persistido no banco os valores da cotação os valores consultados: “
 
 # Entrega: 
  * Disponibilizar um link do repositório no GitHub e encaminhar para developer@cd2.com.br
+
+# Configurações para execução do projeto
+ * Criar o banco de dados Postgresql previamente antes de executar o projeto
+ * Preencher os dados do banco de dados Postgresql no arquivo ```application-dev.properties.example``` e renomeá-lo para ```application-dev.properties```
+
+# Documentação:
+ * Ao executar o projeto em localhost, a documentação estará disponível em http://localhost:8080/swagger-ui.html
